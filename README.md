@@ -1,39 +1,49 @@
 # check-opencode-free-models
 
-OpenCode Console (`https://opencode.ai/inference/v1/models`) üzerinden, OpenCode
-ücretsiz **chat** modellerini `~/.config/opencode/opencode.jsonc` ile **sync eden**
-küçük bir araç.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## Nasıl çalışır
+🌐 **English** · [Türkçe](./README.tr.md)
 
-1. **Fetch:** `fetch_free_ids()` kaynak endpoint (`opencode.ai/inference/v1/models`,
-   auth gerekmez) dan her modeli okur. Filtre: `cost.text.input.price == 0 &&
-   cost.text.output.price == 0` ve `type == "chat"`.
-   - Karar modelleri (`type: decision`, örneğin Jev `jev-1.13-free`) chat değil
-     (`recommended_api: systemone`), bu yüzden `opencode-api` bloğuna yazılmaz.
-2. **Drift:** `read_config_models()` → `provider.opencode-api.models` bloğundaki
-   `id -> name` sözlüğünü okur. Canlı listedeki ücretsiz modellerle
-   ayırımlar: eklenecek (`added`), kaldırılacak (`removed`).
-3. **Apply:** `--apply` ile:
-   - Yedeği `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS`
-     (`shutil.copy2`, metadata korunur) alır.
-   - `build_block()` → her satır `        "id": { "name": "name" },` virgüllü
-     satırlar; doğru virgüllere sahip yanlış satır üretmeyi engellemek için
-     satırları aralarında virgül koyup yazdırır.
-   - `pattern.subn` ile `opencode-api`'nin models bloğunu değiştirir.
-   - **Validate-before-write:** değişmiş metni `json.loads(new_text)` ile
-     **yazdırmadan önce** doğrular — geçersiz olursa config'e hiç dokunmaz.
+**check-opencode-free-models** is a tiny tool that keeps the free **chat**
+models published by the OpenCode Console in sync with
+`~/.config/opencode/opencode.jsonc`.
 
-İdempotent: tekrar `--apply` çalıştırınca drift yok.
+It fetches `https://opencode.ai/inference/v1/models` (no auth), filters free
+chat models, compares them against `provider.opencode-api.models`, reports drift
+(`added` / `removed`), and — with `--apply` — rewrites the block in place
+after taking a timestamped backup.
 
-## Kullanım
+## How it works
+
+1. **Fetch** — `fetch_free_ids()` reads every model from the source endpoint.
+   Filter: `cost.text.input.price == 0 && cost.text.output.price == 0` and
+   `type == "chat"`.
+   - Decision models (`type: decision`, e.g. Jev `jev-1.13-free`) are not chat
+     (`recommended_api: systemone`), so they are never written to the
+     `opencode-api` block.
+2. **Drift** — `read_config_models()` reads the `id -> name` map from
+   `provider.opencode-api.models`. Diff against the live free list: `added`,
+   `removed`.
+3. **Apply** — with `--apply`:
+   - Backup `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS` (`shutil.copy2`,
+     metadata preserved).
+   - `build_block()` joins lines with commas (no trailing comma).
+   - `pattern.subn` rewrites the `opencode-api` models block.
+   - **Validate-before-write**: the rewritten text is parsed with
+     `json.loads(new_text)` *before* the file is touched; on failure the config
+     is left untouched.
+
+Idempotent: re-running `--apply` reports no drift.
+
+## Usage
 
 ```
-python3 check-free-models.py            # drift raporu (exit 0: güncel, 1: drift var)
-python3 check-free-models.py --apply    # yedeği alarak güncelle
+python3 check-free-models.py            # drift report (exit 0: in sync, 1: drift)
+python3 check-free-models.py --apply    # update, with backup
 ```
 
-Örnek çıktı:
+Example output:
 
 ```
 canlı ücretsiz sohbet modeli: 11
@@ -43,44 +53,70 @@ kaldırılacak: -
 SONUÇ: güncel, fark yok.
 ```
 
-## OpenCode Desktop ve Crontab
+## OpenCode Desktop and crontab
 
-Bu araç **OpenCode Desktop'ın** kendi `~/.config/opencode/opencode.jsonc`
-yapılandırmasını hedefler — başka bir config dosyasına dokunmaz.
+This tool targets **OpenCode Desktop's** own
+`~/.config/opencode/opencode.jsonc` — it never touches any other config file.
 
-`--apply` ile config'i otomatik güncelleyebilirsin, veya sadece drift
-kontrolü için günlük bir crontab satırı ekleyebilirsin:
+Apply updates automatically with `--apply`, or run a daily drift check from
+crontab:
 
 ```
 0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-free-models.py
 ```
 
-Drift olursa çıkış kodu 1 olur (`SONUÇ: drift var. --apply ile güncelle.`);
-config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
+Exit code `1` on drift (`SONUÇ: drift var. --apply ile güncelle.`), `0` when
+in sync (`SONUÇ: güncel, fark yok.`).
 
-## Dosyalar
+## Files
 
-| Dosya | Açıklama |
+| File | Description |
 |---|---|
-| `check-free-models.py` | Çalışan script (canlı uç, drift, apply + yedek). |
-| `README.md` | Bu dosya. |
+| `check-free-models.py` | Working script (live endpoint, drift, apply + backup). |
+| `README.md` | This file (English). |
+| `README.tr.md` | Turkish tour. |
+| `CHANGELOG.md` | Release history. |
+| `CONTRIBUTING.md` | Development setup and checks. |
+| `LICENSE` | MIT. |
 
-## Değerlendirme / ileride öneriler
+## Project structure
 
-1. **Atomic write** — geçerlik kontrolü yaptıktan sonra `tempfile` + `os.replace`
-   (sistem call) kullan. Disk hata için geçici-durumla bozuk yazımı engellenir.
-2. **Robust `type` filtresi** — `m.get("type") or "chat"` (olmayan type'da default
-   chat) yapmak; daha yeni model formatı değişince silinmemiş chat modeli olur.
-3. **Decision-modelleri WARN** — skip etmek yerine raporda
-   `type=decision (systemone) models ignored: jev-1.13-free` gibi bir bilgi satırı
-   ver: geçmişteki "açık-amamın" durumu (`jev-1.13-free`
-   `opencode-api`'ye yazılıp 429 alma vakası) tekrarlanmasın.
-4. **Unit tests** — `ENDPOINT` ve `CONFIG` module-level constantleri aslında
-   env var'a dönebilir (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) ve endpoint
-   `urllib` mock'lanabilir.
-5. **`--dry-run` aliasi** — mevcut durumu 1 kez daha serbestçe içfakırlayabilir.
-6. **`recommended_api` routing** — `api.recommended_api == "systemone"` model bir
-   `opencode-jev` provider'ına kodlayasım, ama OpenCode'daki systemone/v1
-   endpoint'i 404 dönüyor (denetimde). Jev kararları MCP server
-   (`github:codaaiteam/jev-mcp`, TypeSafe API `api.typesafe.ai`) üzerinde
-   çalışıyor — o kelimeye çıkışın rehberi `jev_gate`/`jev_check` MCP tool'ları.
+```
+check-opencode-free-models/
+├── check-free-models.py
+├── README.md
+├── README.tr.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── .gitignore
+└── docs/
+    └── README.md
+```
+
+## Testing & CI
+
+There is no automated test suite yet. Before a change:
+
+- `python3 -m py_compile check-free-models.py` — syntax.
+- `python3 check-free-models.py` — drift report (exit `0` when in sync).
+
+## Documentation
+
+- [`README.tr.md`](./README.tr.md) — Turkish tour.
+- [`docs/README.md`](./docs/README.md) — documentation map.
+- [`CHANGELOG.md`](./CHANGELOG.md) — release history.
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — development setup.
+
+## Future ideas
+
+1. **Atomic write** — `tempfile` + `os.replace` after validation.
+2. **Robust `type` filter** — `m.get("type") or "chat"`.
+3. **Decision-model WARN** — report skipped `type=decision` models.
+4. **Unit tests** — make `ENDPOINT`/`CONFIG` env-overridable and mock `urllib`.
+5. **`--dry-run` alias**.
+6. **`recommended_api` routing** — systemone endpoint is currently 404.
+
+## License
+
+MIT — see [`LICENSE`](./LICENSE).
