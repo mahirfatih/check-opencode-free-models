@@ -25,6 +25,18 @@ after taking a timestamped backup.
   (no auth; `cost.text.input.price == 0 && cost.text.output.price == 0` and
   `type == "chat"`).
 
+## What gets pulled from where
+
+| Source | What | Target |
+|---|---|---|
+| `https://opencode.ai/inference/v1/models` (no auth) | Free chat models (`type == "chat"`, `cost.text.input/output.price == 0`) — `id` + `name` | `~/.config/opencode/opencode.jsonc` → `provider.opencode-api.models` |
+| Existing config | Preserves already-stored `name` values on update | merged into the rewritten block |
+| `--apply` | Rewrites the block; backup `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS` | same file |
+
+Nothing else is read or written. The example config
+`opencode-free-models.config.example.jsonc` shows the shape of the `opencode-api`
+block (redacted, no secrets).
+
 ## Current free chat models
 
 As of 2026-11-20, the Console lists 11 free chat models (run the script
@@ -101,6 +113,7 @@ in sync (`SONUÇ: güncel, fark yok.`).
 | File | Description |
 |---|---|
 | `check-opencode-free-models.py` | Working script (live endpoint, drift, apply + backup). |
+| `opencode-free-models.config.example.jsonc` | Example `opencode-api` block (redacted, no secrets). |
 | `README.md` | This file (English). |
 | `README.tr.md` | Turkish tour. |
 | `CHANGELOG.md` | Release history. |
@@ -112,6 +125,7 @@ in sync (`SONUÇ: güncel, fark yok.`).
 ```
 check-opencode-free-models/
 ├── check-opencode-free-models.py
+├── opencode-free-models.config.example.jsonc
 ├── README.md
 ├── README.tr.md
 ├── CHANGELOG.md

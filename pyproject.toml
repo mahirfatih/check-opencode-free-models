@@ -45,6 +45,7 @@ force-include = { "check-opencode-free-models.py" = "check_opencode_free_models.
 [tool.hatch.build.targets.sdist]
 include = [
   "/check-opencode-free-models.py",
+  "/opencode-free-models.config.example.jsonc",
   "/pyproject.toml",
   "/README.md",
   "/README.tr.md",

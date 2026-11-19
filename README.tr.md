@@ -20,6 +20,17 @@ küçük bir araç.
   (auth gerekmez; `cost.text.input.price == 0 && cost.text.output.price == 0` ve
   `type == "chat"`).
 
+## Neler nereden çekilir
+
+| Kaynak | Ne | Hedef |
+|---|---|---|
+| `https://opencode.ai/inference/v1/models` (auth yok) | Ücretsiz chat modelleri (`type == "chat"`, `cost.text.input/output.price == 0`) — `id` + `name` | `~/.config/opencode/opencode.jsonc` → `provider.opencode-api.models` |
+| Mevcut config | Güncelleme sırasında mevcut `name` değerleri korunur | yeniden yazılan bloğa birleştirilir |
+| `--apply` | Bloğu yeniden yazar; yedek `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS` | aynı dosya |
+
+Başka hiçbir şey okunmaz/yazılmaz. `opencode-free-models.config.example.jsonc`
+dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
+
 ## Güncel ücretsiz chat modelleri
 
 2026-11-20 itibarıyla Console 11 ücretsiz chat modeli listeliyor
@@ -96,6 +107,7 @@ config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
 | Dosya | Açıklama |
 |---|---|
 | `check-opencode-free-models.py` | Çalışan script (canlı uç, drift, apply + yedek). |
+| `opencode-free-models.config.example.jsonc` | `opencode-api` bloğu örneği (redacted, secret yok). |
 | `README.md` | İngilizce tur. |
 | `README.tr.md` | Bu dosya. |
 | `CHANGELOG.md` | Sürüm geçmişi. |

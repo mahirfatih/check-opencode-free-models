@@ -22,4 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filters: only `type == "chat"` models with `cost.text.input.price == 0` and
   `cost.text.output.price == 0`. Decision models (`type: decision`, e.g. Jev
   `jev-1.13-free`) are excluded from the `opencode-api` block.
+- `opencode-free-models.config.example.jsonc`: shape of the `opencode-api`
+  block (redacted, no secrets).
 - `EXTRA_FREE` emptied; `jev-1.13-free` removed from `opencode-api`.
