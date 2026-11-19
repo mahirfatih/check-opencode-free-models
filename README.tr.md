@@ -12,6 +12,23 @@ küçük bir araç.
   (auth gerekmez; `cost.text.input.price == 0 && cost.text.output.price == 0` ve
   `type == "chat"`).
 
+## Güncel ücretsiz chat modelleri
+
+2026-11-20 itibarıyla Console 11 ücretsiz chat modeli listeliyor
+(yenilemek için script'i çalıştır):
+
+- `beam-free` — Beam Free
+- `big-pickle` — Big Pickle
+- `deepseek-v4.1-flash-free` — DeepSeek V4.1 Flash Free
+- `flint-40b-free` — Flint 40B Free
+- `hy4-flash-free` — Hy4 flash Free
+- `iceman-free` — Iceman Free
+- `longcat-2.5-free` — LongCat 2.5 Free
+- `mimo-v2.6-flash-free` — MiMo-V2.6-Flash Free
+- `nemotron-3.5-lightning-free` — Nemotron 3.5 Lightning Free
+- `nemotron-3.5-super-vl-free` — Nemotron 3.5 Super VL Free
+- `tidepool-alpha-free` — Tidepool Alpha Free
+
 ## Nasıl çalışır
 
 1. **Fetch:** `fetch_free_ids()` kaynak endpoint (`opencode.ai/inference/v1/models`,

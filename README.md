@@ -22,6 +22,23 @@ after taking a timestamped backup.
   (no auth; `cost.text.input.price == 0 && cost.text.output.price == 0` and
   `type == "chat"`).
 
+## Current free chat models
+
+As of 2026-11-20, the Console lists 11 free chat models (run the script
+to refresh):
+
+- `beam-free` — Beam Free
+- `big-pickle` — Big Pickle
+- `deepseek-v4.1-flash-free` — DeepSeek V4.1 Flash Free
+- `flint-40b-free` — Flint 40B Free
+- `hy4-flash-free` — Hy4 flash Free
+- `iceman-free` — Iceman Free
+- `longcat-2.5-free` — LongCat 2.5 Free
+- `mimo-v2.6-flash-free` — MiMo-V2.6-Flash Free
+- `nemotron-3.5-lightning-free` — Nemotron 3.5 Lightning Free
+- `nemotron-3.5-super-vl-free` — Nemotron 3.5 Super VL Free
+- `tidepool-alpha-free` — Tidepool Alpha Free
+
 ## How it works
 
 1. **Fetch** — `fetch_free_ids()` reads every model from the source endpoint.
