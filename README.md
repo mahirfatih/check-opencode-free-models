@@ -14,6 +14,14 @@ chat models, compares them against `provider.opencode-api.models`, reports drift
 (`added` / `removed`), and — with `--apply` — rewrites the block in place
 after taking a timestamped backup.
 
+## Source & references
+
+- Free models documentation: https://opencode.ai/docs/models/#free-models
+- OpenCode Desktop: https://opencode.ai/desktop
+- Live endpoint used by the script: `https://opencode.ai/inference/v1/models`
+  (no auth; `cost.text.input.price == 0 && cost.text.output.price == 0` and
+  `type == "chat"`).
+
 ## How it works
 
 1. **Fetch** — `fetch_free_ids()` reads every model from the source endpoint.

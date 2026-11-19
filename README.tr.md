@@ -4,6 +4,14 @@ OpenCode Console (`https://opencode.ai/inference/v1/models`) üzerinden, OpenCod
 ücretsiz **chat** modellerini `~/.config/opencode/opencode.jsonc` ile **sync eden**
 küçük bir araç.
 
+## Kaynak ve referanslar
+
+- Ücretsiz modeller belgesi: https://opencode.ai/docs/models/#free-models
+- OpenCode Desktop: https://opencode.ai/desktop
+- Script'in kullandığı canlı endpoint: `https://opencode.ai/inference/v1/models`
+  (auth gerekmez; `cost.text.input.price == 0 && cost.text.output.price == 0` ve
+  `type == "chat"`).
+
 ## Nasıl çalışır
 
 1. **Fetch:** `fetch_free_ids()` kaynak endpoint (`opencode.ai/inference/v1/models`,
