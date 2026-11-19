@@ -29,40 +29,40 @@ PROVIDER = "opencode-api"
 EXTRA_FREE = set()
 
 
-def fetch_free_ids() -> list[str]:
+def fetch_free_ids() -> list[tuple[str, str]]:
     req = urllib.request.Request(ENDPOINT, headers={"User-Agent": "curl/8.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        data = json.load(r)["data"]
+    with urllib.request.urlopen(req, timeout=30) as response:
+        data = json.load(response)["data"]
     out = []
-    for m in data:
+    for model in data:
         # Sadece sohbet (chat) modelleri opencode-api bloğuna ait.
         # Karar modelleri (jev gibi, type=decision) systemone endpoint'i
         # üzerinden çalışır ve opencode-jev bloğunda tutulur.
-        if (m.get("type") or "").lower() != "chat":
+        if (model.get("type") or "").lower() != "chat":
             continue
-        t = (m.get("cost") or {}).get("text") or {}
-        i = (t.get("input") or {}).get("price")
-        o = (t.get("output") or {}).get("price")
-        if i == 0 and o == 0:
-            out.append((m["id"], m.get("name") or m["id"]))
+        cost_text = (model.get("cost") or {}).get("text") or {}
+        input_price = (cost_text.get("input") or {}).get("price")
+        output_price = (cost_text.get("output") or {}).get("price")
+        if input_price == 0 and output_price == 0:
+            out.append((model["id"], model.get("name") or model["id"]))
     return out
 
 
 def read_config_models(text: str) -> dict[str, str]:
     """opencode-api provider'ının models bloğundaki id -> name sözlüğü."""
-    m = re.search(
+    found = re.search(
         r'"' + PROVIDER + r'"\s*:\s*\{.*?"models"\s*:\s*\{(.*?)\n\s*\}',
         text,
         re.S,
     )
-    if not m:
+    if not found:
         sys.exit(f"HATA: {PROVIDER} models bloğu bulunamadı.")
-    block = m.group(1)
+    block = found.group(1)
     out: dict[str, str] = {}
     for line in block.splitlines():
-        mm = re.match(r'\s*"([^"]+)"\s*:\s*\{\s*"name"\s*:\s*"([^"]*)"', line)
-        if mm:
-            out[mm.group(1)] = mm.group(2)
+        entry_match = re.match(r'\s*"([^"]+)"\s*:\s*\{\s*"name"\s*:\s*"([^"]*)"', line)
+        if entry_match:
+            out[entry_match.group(1)] = entry_match.group(2)
     return out
 
 
