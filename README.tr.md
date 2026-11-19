@@ -1,5 +1,13 @@
 # check-opencode-free-models
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![MCP](https://img.shields.io/badge/MCP-stdio-lightgrey)
+![Client](https://img.shields.io/badge/client-OpenCode-green)
+[![PyPI](https://img.shields.io/pypi/v/check-opencode-free-models)](https://pypi.org/project/check-opencode-free-models/)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+🌐 **English** · [Türkçe](./README.tr.md)
+
 OpenCode Console (`https://opencode.ai/inference/v1/models`) üzerinden, OpenCode
 ücretsiz **chat** modellerini `~/.config/opencode/opencode.jsonc` ile **sync eden**
 küçük bir araç.
