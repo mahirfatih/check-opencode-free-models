@@ -1,4 +1,4 @@
-# check-opencode-free-models
+# Check Opencode Free Models
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-stdio-lightgrey)
