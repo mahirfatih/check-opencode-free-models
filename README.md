@@ -64,8 +64,8 @@ Idempotent: re-running `--apply` reports no drift.
 ## Usage
 
 ```
-python3 check-free-models.py            # drift report (exit 0: in sync, 1: drift)
-python3 check-free-models.py --apply    # update, with backup
+python3 check-opencode-free-models.py            # drift report (exit 0: in sync, 1: drift)
+python3 check-opencode-free-models.py --apply    # update, with backup
 ```
 
 Example output:
@@ -87,7 +87,7 @@ Apply updates automatically with `--apply`, or run a daily drift check from
 crontab:
 
 ```
-0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-free-models.py
+0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-opencode-free-models.py
 ```
 
 Exit code `1` on drift (`SONUÇ: drift var. --apply ile güncelle.`), `0` when
@@ -97,7 +97,7 @@ in sync (`SONUÇ: güncel, fark yok.`).
 
 | File | Description |
 |---|---|
-| `check-free-models.py` | Working script (live endpoint, drift, apply + backup). |
+| `check-opencode-free-models.py` | Working script (live endpoint, drift, apply + backup). |
 | `README.md` | This file (English). |
 | `README.tr.md` | Turkish tour. |
 | `CHANGELOG.md` | Release history. |
@@ -108,7 +108,7 @@ in sync (`SONUÇ: güncel, fark yok.`).
 
 ```
 check-opencode-free-models/
-├── check-free-models.py
+├── check-opencode-free-models.py
 ├── README.md
 ├── README.tr.md
 ├── CHANGELOG.md
@@ -123,8 +123,8 @@ check-opencode-free-models/
 
 There is no automated test suite yet. Before a change:
 
-- `python3 -m py_compile check-free-models.py` — syntax.
-- `python3 check-free-models.py` — drift report (exit `0` when in sync).
+- `python3 -m py_compile check-opencode-free-models.py` — syntax.
+- `python3 check-opencode-free-models.py` — drift report (exit `0` when in sync).
 
 ## Documentation
 

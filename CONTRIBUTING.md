@@ -6,8 +6,8 @@ single-file tool, so the contribution surface is intentionally narrow.
 ## Development setup
 
 ```bash
-python3 check-free-models.py            # drift report (read-only)
-python3 check-free-models.py --apply    # apply + timestamped backup
+python3 check-opencode-free-models.py            # drift report (read-only)
+python3 check-opencode-free-models.py --apply    # apply + timestamped backup
 ```
 
 No third-party dependencies: only the Python standard library
@@ -15,8 +15,8 @@ No third-party dependencies: only the Python standard library
 
 ## Checks before a change
 
-- `python3 -m py_compile check-free-models.py` — syntax.
-- `python3 check-free-models.py` — drift report (exit `0` when in sync).
+- `python3 -m py_compile check-opencode-free-models.py` — syntax.
+- `python3 check-opencode-free-models.py` — drift report (exit `0` when in sync).
 - Keep the script a single file; do not split it into a package.
 - PEP 8 naming for everything inside the file (the file name itself stays
   kebab-case per the repo convention).

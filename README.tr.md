@@ -54,8 +54,8 @@ küçük bir araç.
 ## Kullanım
 
 ```
-python3 check-free-models.py            # drift raporu (exit 0: güncel, 1: drift var)
-python3 check-free-models.py --apply    # yedeği alarak güncelle
+python3 check-opencode-free-models.py            # drift raporu (exit 0: güncel, 1: drift var)
+python3 check-opencode-free-models.py --apply    # yedeği alarak güncelle
 ```
 
 Örnek çıktı:
@@ -77,7 +77,7 @@ yapılandırmasını hedefler — başka bir config dosyasına dokunmaz.
 kontrolü için günlük bir crontab satırı ekleyebilirsin:
 
 ```
-0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-free-models.py
+0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-opencode-free-models.py
 ```
 
 Drift olursa çıkış kodu 1 olur (`SONUÇ: drift var. --apply ile güncelle.`);
@@ -87,7 +87,7 @@ config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
 
 | Dosya | Açıklama |
 |---|---|
-| `check-free-models.py` | Çalışan script (canlı uç, drift, apply + yedek). |
+| `check-opencode-free-models.py` | Çalışan script (canlı uç, drift, apply + yedek). |
 | `README.md` | İngilizce tur. |
 | `README.tr.md` | Bu dosya. |
 | `CHANGELOG.md` | Sürüm geçmişi. |

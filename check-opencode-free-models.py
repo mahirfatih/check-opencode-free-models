@@ -2,8 +2,8 @@
 """OpenCode Console ücretsiz modellerini canlı endpoint ile karşılaştırır.
 
 Kullanım:
-    python3 check-free-models.py            # farkı raporla (drift varsa exit 1)
-    python3 check-free-models.py --apply    # opencode.jsonc'yi güncelle (yedek alarak)
+    python3 check-opencode-free-models.py            # farkı raporla (drift varsa exit 1)
+    python3 check-opencode-free-models.py --apply    # opencode.jsonc'yi güncelle (yedek alarak)
 
 Kaynak: https://opencode.ai/inference/v1/models  (auth gerekmez; cost==0 => ücretsiz)
 Config: ~/.config/opencode/opencode.jsonc  (provider.opencode-api.models)

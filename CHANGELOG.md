@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `check-free-models.py`: compares the free **chat** models published by the
+- `check-opencode-free-models.py`: compares the free **chat** models published by the
   OpenCode Console (`https://opencode.ai/inference/v1/models`, no auth) against
   the `provider.opencode-api.models` block of `~/.config/opencode/opencode.jsonc`.
 - Drift report: lists models to add (`added`) and to remove (`removed`); exits
