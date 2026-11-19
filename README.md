@@ -43,6 +43,21 @@ kaldırılacak: -
 SONUÇ: güncel, fark yok.
 ```
 
+## OpenCode Desktop ve Crontab
+
+Bu araç **OpenCode Desktop'ın** kendi `~/.config/opencode/opencode.jsonc`
+yapılandırmasını hedefler — başka bir config dosyasına dokunmaz.
+
+`--apply` ile config'i otomatik güncelleyebilirsin, veya sadece drift
+kontrolü için günlük bir crontab satırı ekleyebilirsin:
+
+```
+0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-free-models.py
+```
+
+Drift olursa çıkış kodu 1 olur (`SONUÇ: drift var. --apply ile güncelle.`);
+config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
+
 ## Dosyalar
 
 | Dosya | Açıklama |
