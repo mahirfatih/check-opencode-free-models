@@ -96,7 +96,7 @@ yapılandırmasını hedefler — başka bir config dosyasına dokunmaz.
 kontrolü için günlük bir crontab satırı ekleyebilirsin:
 
 ```
-0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-opencode-free-models.py
+0 6 * * * /path/to/check-opencode-free-models/check-opencode-free-models.py
 ```
 
 Drift olursa çıkış kodu 1 olur (`SONUÇ: drift var. --apply ile güncelle.`);

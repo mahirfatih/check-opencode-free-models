@@ -102,7 +102,7 @@ Apply updates automatically with `--apply`, or run a daily drift check from
 crontab:
 
 ```
-0 6 * * * /Users/MahirFatih/Sites/check-opencode-free-models/check-opencode-free-models.py
+0 6 * * * /path/to/check-opencode-free-models/check-opencode-free-models.py
 ```
 
 Exit code `1` on drift (`SONUÇ: drift var. --apply ile güncelle.`), `0` when
