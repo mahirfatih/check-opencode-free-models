@@ -17,11 +17,12 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import time
 import urllib.request
 
-CONFIG = os.path.expanduser("~/.config/opencode/opencode.jsonc")
-ENDPOINT = "https://opencode.ai/inference/v1/models"
+CONFIG = os.path.expanduser(os.environ.get("OPENCODE_CONFIG_PATH", "~/.config/opencode/opencode.jsonc"))
+ENDPOINT = os.environ.get("OPENCODE_MODELS_URL", "https://opencode.ai/inference/v1/models")
 PROVIDER = "opencode-api"
 # The systemone endpoint (opencode.ai/inference/systemone/v1) returns 404 and
 # the opencode-jev provider was removed from the config; the free Jev model is no
@@ -29,22 +30,30 @@ PROVIDER = "opencode-api"
 EXTRA_FREE = set()
 
 
+SKIPPED_FREE_MODELS: list[tuple[str, str]] = []
+
+
 def fetch_free_ids() -> list[tuple[str, str]]:
     req = urllib.request.Request(ENDPOINT, headers={"User-Agent": "curl/8.0"})
-    with urllib.request.urlopen(req, timeout=30) as response:
+    with urllib.request.urlopen(req, timeout=30) as response:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected (ENDPOINT is a module-level constant, not user input)
         data = json.load(response)["data"]
     out = []
+    skipped: list[tuple[str, str]] = []
     for model in data:
         # Only chat models belong in the opencode-api block.
         # Decision models (e.g. Jev, type=decision) run through the systemone
         # endpoint and are kept in the opencode-jev block.
-        if (model.get("type") or "").lower() != "chat":
-            continue
         cost_text = (model.get("cost") or {}).get("text") or {}
         input_price = (cost_text.get("input") or {}).get("price")
         output_price = (cost_text.get("output") or {}).get("price")
-        if input_price == 0 and output_price == 0:
-            out.append((model["id"], model.get("name") or model["id"]))
+        if input_price != 0 or output_price != 0:
+            continue
+        # Free model: keep chat ones, warn about the rest (e.g. type=decision).
+        if (model.get("type") or "chat").lower() != "chat":
+            skipped.append((model["id"], model.get("name") or model["id"]))
+            continue
+        out.append((model["id"], model.get("name") or model["id"]))
+    SKIPPED_FREE_MODELS[:] = skipped
     return out
 
 
@@ -117,7 +126,7 @@ def read_config_models(text: str) -> dict[str, str]:
         re.S,
     )
     if not found:
-        sys.exit(f"HATA: {PROVIDER} models bloğu bulunamadı.")
+        sys.exit(f"ERROR: {PROVIDER} models block not found.")
     block = found.group(1)
     # Entries may be one-line (`"id": { "name": "X" },`) or multi-line (the shape
     # of the example config). \s* spans newlines, so one regex covers both.
@@ -135,8 +144,13 @@ def build_block(free: list[tuple[str, str]], names: dict[str, str]) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--apply", action="store_true", help="config'i güncelle")
+    ap.add_argument("--apply", action="store_true", help="update config")
+    ap.add_argument("--dry-run", action="store_true", help="report drift without making changes (default)")
     args = ap.parse_args()
+
+    # --dry-run wins over --apply: never write when explicitly requested.
+    if args.dry_run:
+        args.apply = False
 
     free = fetch_free_ids()
     free_ids = [mid for mid, _ in free]
@@ -148,21 +162,25 @@ def main() -> int:
     added = [i for i in free_ids if i not in current]
     removed = [i for i in cur_ids if i not in free_ids]
 
-    print(f"canlı ücretsiz sohbet modeli: {len(free_ids)}")
-    print(f"config'deki model           : {len(cur_ids)}")
-    print(f"eklenecek : {added or '-'}")
-    print(f"kaldırılacak: {removed or '-'}")
+    print(f"live free chat models: {len(free_ids)}")
+    print(f"config models            : {len(cur_ids)}")
+    print(f"to add     : {added or '-'}")
+    print(f"to remove  : {removed or '-'}")
 
     missing_extra = [m for m in EXTRA_FREE if m not in text]
     if missing_extra:
-        print(f"UYARI: systemone ücretsiz modeli eksik: {missing_extra}")
+        print(f"WARNING: missing systemone free model: {missing_extra}")
+
+    skipped_free = list(SKIPPED_FREE_MODELS)
+    if skipped_free:
+        print(f"WARNING: non-chat free model skipped: {skipped_free}")
 
     if not added and not removed and not missing_extra:
-        print("SONUÇ: güncel, fark yok.")
+        print("RESULT: in sync, no drift.")
         return 0
 
     if not args.apply:
-        print("SONUÇ: drift var. --apply ile güncelle.")
+        print("RESULT: drift found. Update with --apply.")
         return 1
 
     bak = f"{CONFIG}.bak-{time.strftime('%Y-%m-%d-%H_%M_%S')}"
@@ -174,7 +192,7 @@ def main() -> int:
     )
     new_text, n = pattern.subn(lambda m: m.group(1) + "\n" + new_block + m.group(3), text, count=1)
     if n != 1:
-        sys.exit("HATA: models bloğu değiştirilemedi.")
+        sys.exit("ERROR: models block could not be updated.")
 
     # Validate first, write second: never touch the config if the result is invalid.
     # The config is JSONC (comments / trailing commas), so convert it to strict
@@ -183,14 +201,29 @@ def main() -> int:
         json.loads(jsonc_to_json(new_text))
     except json.JSONDecodeError as e:
         sys.exit(
-            f"HATA: üretilen içerik geçersiz JSON ({e}).\n"
-            f"Config değiştirilmedi. Yedek: {bak}"
+            f"ERROR: generated content is invalid JSON ({e}).\n"
+            f"Config unchanged. Backup: {bak}"
         )
 
-    with open(CONFIG, "w", encoding="utf-8") as f:
-        f.write(new_text)
+    # Atomic write: write to a temp file in the same directory, then os.replace.
+    # This avoids a partially-written config if the process is interrupted.
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        prefix=".opencode.jsonc.", dir=os.path.dirname(os.path.abspath(CONFIG))
+    )
+    try:
+        with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+            f.write(new_text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, CONFIG)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
-    print(f"UYGULANDI. Yedek: {bak}")
+    print(f"APPLIED. Backup: {bak}")
     for mid in added:
         print(f"  + {mid}")
     for mid in removed:

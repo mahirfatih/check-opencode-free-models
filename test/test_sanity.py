@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Comprehensive sanity tests for check-opencode-free-models.
 
-Sanity = en derin seviyede minimum kabul kriterleri: araç tanımlı sabiti
-doğru, örnek konfigürasyon JSONC olarak normalize edilebiliyor, uretilen
-blok gecerli JSON.
+Sanity = minimum acceptance criteria at the deepest level: the tool's
+defined constants are correct, the example configuration can be normalized
+as JSONC, and the generated block is valid JSON.
 
-Kapsam:
-    - Sabitler (PROVIDER, ENDPOINT, EXTRA_FREE).
-    - Repo ornek konfigurasyonu (opencode-free-models.config.example.jsonc)
-      jsonc_to_json + json.loads ile gecerli oluyor.
-    - build_block cikisi strict JSON.
+Scope:
+    - Constants (PROVIDER, ENDPOINT, EXTRA_FREE).
+    - Repo example config (opencode-free-models.config.example.jsonc)
+      is valid via jsonc_to_json + json.loads.
+    - build_block output is strict JSON.
 """
 
 from __future__ import annotations

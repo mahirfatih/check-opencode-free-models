@@ -9,7 +9,7 @@ opencode.jsonc and verifies the full --apply lifecycle:
 Kapsam:
     - Drift raporu (rc=1) on stale config.
     - --apply (rc=0) + timestamped backup + written content still valid JSONC.
-    - Ikinci calistirma (rc=0) -> "SONUÇ: güncel, fark yok." (idempotent).
+    - Ikinci calistirma (rc=0) -> "RESULT: in sync, no drift." (idempotent).
 """
 
 from __future__ import annotations
@@ -82,12 +82,12 @@ class EndToEndTests(unittest.TestCase):
         # 1. Stale config -> drift report, exit 1.
         proc = run_script([], self.home)
         self.assertEqual(proc.returncode, 1)
-        self.assertIn("SONUÇ: drift var. --apply ile güncelle.", proc.stdout)
+        self.assertIn("RESULT: drift found. Update with --apply.", proc.stdout)
 
         # 2. --apply -> exit 0, backup created, content valid JSONC, written.
         proc = run_script(["--apply"], self.home)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("UYGULANDI.", proc.stdout)
+        self.assertIn("APPLIED.", proc.stdout)
         backups = list(self.home.glob(".config/opencode/opencode.jsonc.bak-*"))
         self.assertTrue(backups, "timestamped backup must exist after --apply")
 
@@ -99,7 +99,7 @@ class EndToEndTests(unittest.TestCase):
         # 3. Second run -> in sync, exit 0 (idempotent).
         proc = run_script([], self.home)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("SONUÇ: güncel, fark yok.", proc.stdout)
+        self.assertIn("RESULT: in sync, no drift.", proc.stdout)
 
 
 if __name__ == "__main__":

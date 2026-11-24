@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Comprehensive regression tests for check-opencode-free-models.
 
-Regression = v1.0.2'ten kalan bug'in tekrarini ve apply akisinin guven
-butunlugunu dogrular.
+Regression = re-checks the bug left from v1.0.2 and the integrity of the
+apply flow.
 
-Kapsam:
-    - v1.0.2 koku nedeni: strict json.loads raw JSONC -> JSONDecodeError.
-      jsonc_to_json normalizasyonu olmadan tekrar etmemeli.
-    - FIX: jsonc_to_json + json.loads, yorumlu JSONC'yi kabul eder.
-    - Apply: validate-before-write — uretilen içerik geçerliyse yazılır.
+Scope:
+    - v1.0.2 root cause: strict json.loads on raw JSONC -> JSONDecodeError.
+      Must not recur without jsonc_to_json normalization.
+    - FIX: jsonc_to_json + json.loads accepts commented JSONC.
+    - Apply: validate-before-write — written only if generated content is valid.
 """
 
 from __future__ import annotations
@@ -38,13 +38,13 @@ class RegressionTests(unittest.TestCase):
         cls.mod = load_script_module()
 
     def test_pre_fix_behavior_would_have_failed(self):
-        """v1.0.2 regression'ini gostermek: yorumlu JSONC, strict parser'yi reddeder."""
+        """v1.0.2 regression demo: commented JSONC is rejected by the strict parser."""
         jsonc_text = '{\n  "provider": {\n    "opencode-api": {\n      "models": {\n        // free models\n        "flint-40b-free": { "name": "Flint 40B Free" }\n      }\n    }\n  }\n}'
         with self.assertRaises(json.JSONDecodeError):
             json.loads(jsonc_text)
 
     def test_fixed_behavior_accepts_jsonc(self):
-        """FIX: jsonc_to_json + json.loads, yorumlu JSONC'yi kabul eder."""
+        """FIX: jsonc_to_json + json.loads accepts commented JSONC."""
         jsonc_text = '{\n  "provider": {\n    "opencode-api": {\n      "models": {\n        // free models\n        "flint-40b-free": { "name": "Flint 40B Free" }\n      }\n    }\n  }\n}'
         parsed = json.loads(self.mod.jsonc_to_json(jsonc_text))
         self.assertEqual(
@@ -53,7 +53,7 @@ class RegressionTests(unittest.TestCase):
         )
 
     def test_generated_content_with_comment_is_validated(self):
-        """HOTFIX senaryosu: uretilen içerikte // yorumu -> validate normalizasyonla gecer."""
+        """HOTFIX scenario: generated content with a // comment is validated via normalization."""
         generated = (
             '{\n  "provider": {\n    "opencode-api": {\n      "models": {\n'
             "        // live free models\n"

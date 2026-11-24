@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unittest discover on push and PR.
 - Docs refreshed: model lists and example output updated to the live
   endpoint (10 free chat models, dated 2026-11-24).
+- Atomic config write (tempfile + os.replace, fsync) for `--apply`.
+- Robust `type` filter (missing `type` defaults to `chat`).
+- WARN when a free non-chat (e.g. decision) model is skipped.
+- `--dry-run` flag (forces no-write, overrides `--apply`).
+- `OPENCODE_MODELS_URL` / `OPENCODE_CONFIG_PATH` env overrides.
+- English-only Python sources (no Turkish in comments or messages).
+- GitHub Actions pinned to full commit SHAs (supply-chain hardening).
 
 ### Fixed
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Comprehensive smoke tests for check-opencode-free-models.
 
-Smoke = en hızlı güvenlik ağı: script gerçekten çalışıyor mu, JSONC
-normalizer'ı en kötü ihtimal üzerinde (yorum/trailing comma) işe yarıyor mu?
+Smoke = fastest safety net: does the script actually run, and does the
+JSONC normalizer handle the worst case (comments / trailing commas)?
 
-Kapsam:
-    - Script dosyasının varlığı ve derlenebilirliği (py_compile).
-    - Modülün (import) hatasız yüklemesi.
-    - jsonc_to_json: temiz JSON, yorumlu JSON, trailing comma.
+Scope:
+    - Script file existence and compilability (py_compile).
+    - Module import without errors.
+    - jsonc_to_json: clean JSON, commented JSON, trailing comma.
 """
 
 from __future__ import annotations

@@ -79,11 +79,11 @@ python3 check-opencode-free-models.py --apply    # yedeği alarak güncelle
 Örnek çıktı:
 
 ```
-canlı ücretsiz sohbet modeli: 10
-config'deki model           : 10
-eklenecek : -
-kaldırılacak: -
-SONUÇ: güncel, fark yok.
+live free chat models: 10
+config models            : 10
+to add     : -
+to remove  : -
+RESULT: in sync, no drift.
 ```
 
 ## OpenCode Desktop ve Crontab
@@ -98,8 +98,8 @@ kontrolü için günlük bir crontab satırı ekleyebilirsin:
 0 6 * * * /path/to/check-opencode-free-models/check-opencode-free-models.py
 ```
 
-Drift olursa çıkış kodu 1 olur (`SONUÇ: drift var. --apply ile güncelle.`);
-config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
+Drift olursa çıkış kodu 1 olur (`RESULT: drift found. Update with --apply.`);
+config güncel olduğunda 0 (`RESULT: in sync, no drift.`).
 
 ## Dosyalar
 
@@ -116,18 +116,12 @@ config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
 
 ## Değerlendirme / ileride öneriler
 
-1. **Atomic write** — geçerlik kontrolü yaptıktan sonra `tempfile` + `os.replace`
-   (sistem call) kullan. Disk hata için geçici-durumla bozuk yazımı engellenir.
-2. **Robust `type` filtresi** — `m.get("type") or "chat"` (olmayan type'da default
-   chat) yapmak; daha yeni model formatı değişince silinmemiş chat modeli olur.
-3. **Decision-modelleri WARN** — skip etmek yerine raporda
-   `type=decision (systemone) models ignored: jev-1.13-free` gibi bir bilgi satırı
-   ver: geçmişteki "açık-amamın" durumu (`jev-1.13-free`
-   `opencode-api`'ye yazılıp 429 alma vakası) tekrarlanmasın.
-4. **Unit tests** — `ENDPOINT` ve `CONFIG` module-level constantleri artık
-   test suite'inde mock'larla doğrulanıyor (`test/test_unit.py`); env var
-   override'i (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) hâlâ ileride.
-5. **`--dry-run` aliasi** — mevcut durumu 1 kez daha serbestçe içfakırlayabilir.
+Bu sürümde tamamlananlar: atomic write (tempfile + os.replace), robust `type`
+filtresi (`m.get("type") or "chat"`), atlanan non-chat modeller için WARN,
+env override'ları (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) ve `--dry-run`
+alias'ı.
+
+Kalan:
 6. **`recommended_api` routing** — `api.recommended_api == "systemone"` model bir
    `opencode-jev` provider'ına kodlayasım, ama OpenCode'daki systemone/v1
    endpoint'i 404 dönüyor (denetimde). Jev kararları MCP server

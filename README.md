@@ -85,11 +85,11 @@ python3 check-opencode-free-models.py --apply    # update, with backup
 Example output:
 
 ```
-canlı ücretsiz sohbet modeli: 10
-config'deki model           : 10
-eklenecek : -
-kaldırılacak: -
-SONUÇ: güncel, fark yok.
+live free chat models: 10
+config models            : 10
+to add     : -
+to remove  : -
+RESULT: in sync, no drift.
 ```
 
 ## OpenCode Desktop and crontab
@@ -104,8 +104,8 @@ crontab:
 0 6 * * * /path/to/check-opencode-free-models/check-opencode-free-models.py
 ```
 
-Exit code `1` on drift (`SONUÇ: drift var. --apply ile güncelle.`), `0` when
-in sync (`SONUÇ: güncel, fark yok.`).
+Exit code `1` on drift (`RESULT: drift found. Update with --apply.`), `0` when
+in sync (`RESULT: in sync, no drift.`).
 
 ## Files
 
@@ -184,12 +184,13 @@ Before a change:
 
 ## Future ideas
 
-1. **Atomic write** — `tempfile` + `os.replace` after validation.
-2. **Robust `type` filter** — `m.get("type") or "chat"`.
-3. **Decision-model WARN** — report skipped `type=decision` models.
-4. **Unit tests** — make `ENDPOINT`/`CONFIG` env-overridable and mock `urllib`.
-5. **`--dry-run` alias**.
-6. **`recommended_api` routing** — systemone endpoint is currently 404.
+Completed in this release: atomic write (tempfile + os.replace), robust `type`
+filter (`m.get("type") or "chat"`), decision-model WARN for skipped non-chat
+models, env overrides (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) and a
+`--dry-run` alias.
+
+Remaining:
+1. **`recommended_api` routing** — systemone endpoint is currently 404.
 
 ## License
 

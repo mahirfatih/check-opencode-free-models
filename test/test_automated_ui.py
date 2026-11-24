@@ -68,11 +68,11 @@ class AutomatedUiTests(unittest.TestCase):
         proc = run_script([], self.home)
         self.assertEqual(proc.returncode, 1)
         for expected in (
-            "canlı ücretsiz sohbet modeli:",
-            "config'deki model",
-            "eklenecek :",
-            "kaldırılacak:",
-            "SONUÇ: drift var. --apply ile güncelle.",
+            "live free chat models:",
+            "config models",
+            "to add     :",
+            "to remove  :",
+            "RESULT: drift found. Update with --apply.",
         ):
             self.assertIn(expected, proc.stdout)
 
@@ -80,7 +80,7 @@ class AutomatedUiTests(unittest.TestCase):
         run_script(["--apply"], self.home)
         proc = run_script([], self.home)
         self.assertEqual(proc.returncode, 0)
-        self.assertIn("SONUÇ: güncel, fark yok.", proc.stdout)
+        self.assertIn("RESULT: in sync, no drift.", proc.stdout)
 
 
 if __name__ == "__main__":
