@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""OpenCode Console ücretsiz modellerini canlı endpoint ile karşılaştırır.
+"""Compare OpenCode Console's free models against the live endpoint.
 
-Kullanım:
-    python3 check-opencode-free-models.py            # farkı raporla (drift varsa exit 1)
-    python3 check-opencode-free-models.py --apply    # opencode.jsonc'yi güncelle (yedek alarak)
+Usage:
+    python3 check-opencode-free-models.py            # report drift (exit 1 if drift is found)
+    python3 check-opencode-free-models.py --apply    # update opencode.jsonc (with a backup)
 
-Kaynak: https://opencode.ai/inference/v1/models  (auth gerekmez; cost==0 => ücretsiz)
+Source: https://opencode.ai/inference/v1/models  (no auth; cost==0 => free)
 Config: ~/.config/opencode/opencode.jsonc  (provider.opencode-api.models)
 """
 
@@ -23,9 +23,9 @@ import urllib.request
 CONFIG = os.path.expanduser("~/.config/opencode/opencode.jsonc")
 ENDPOINT = "https://opencode.ai/inference/v1/models"
 PROVIDER = "opencode-api"
-# systemone endpoint'i (opencode.ai/inference/systemone/v1) 404 dönüyor ve
-# opencode-jev provider'ı config'den kaldırıldı; ücretsiz jev modeli artık
-# takip edilmiyor. (Jev kararları MCP server üzerinden TypeSafe API ile çalışır.)
+# The systemone endpoint (opencode.ai/inference/systemone/v1) returns 404 and
+# the opencode-jev provider was removed from the config; the free Jev model is no
+# longer tracked. (Jev decisions run through the MCP server / TypeSafe API.)
 EXTRA_FREE = set()
 
 
@@ -35,9 +35,9 @@ def fetch_free_ids() -> list[tuple[str, str]]:
         data = json.load(response)["data"]
     out = []
     for model in data:
-        # Sadece sohbet (chat) modelleri opencode-api bloğuna ait.
-        # Karar modelleri (jev gibi, type=decision) systemone endpoint'i
-        # üzerinden çalışır ve opencode-jev bloğunda tutulur.
+        # Only chat models belong in the opencode-api block.
+        # Decision models (e.g. Jev, type=decision) run through the systemone
+        # endpoint and are kept in the opencode-jev block.
         if (model.get("type") or "").lower() != "chat":
             continue
         cost_text = (model.get("cost") or {}).get("text") or {}
@@ -48,8 +48,69 @@ def fetch_free_ids() -> list[tuple[str, str]]:
     return out
 
 
+def jsonc_to_json(text: str) -> str:
+    """Convert JSONC text to strict JSON (for validation only, never for writing).
+
+    opencode.jsonc is a JSONC file: it may contain // and /* */ comments as well
+    as trailing commas. Since ``json.loads`` rejects those, this removes comments
+    and trailing commas — without touching anything inside string literals —
+    before the generated content is validated.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    in_string = False
+    escaped = False
+
+    while i < n:
+        ch = text[i]
+
+        if in_string:
+            out.append(ch)
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            i += 1
+            continue
+
+        if ch == '"':
+            in_string = True
+            out.append(ch)
+            i += 1
+        elif ch == "/" and i + 1 < n and text[i + 1] == "/":
+            # // comment: skip to end of line, keep the line structure.
+            i += 2
+            while i < n and text[i] not in "\r\n":
+                i += 1
+            out.append("\n")
+        elif ch == "/" and i + 1 < n and text[i + 1] == "*":
+            # /* */ comment: skip to the closing delimiter.
+            i += 2
+            while i + 1 < n and not (text[i] == "*" and text[i + 1] == "/"):
+                i += 1
+            i += 2
+            out.append(" ")
+        elif ch in "}]":
+            # Trailing comma: drop the last comma before the closing bracket.
+            j = len(out) - 1
+            while j >= 0 and out[j].isspace():
+                j -= 1
+            if j >= 0 and out[j] == ",":
+                del out[j:]
+            out.append(ch)
+            i += 1
+        else:
+            out.append(ch)
+            i += 1
+
+    return "".join(out)
+
+
 def read_config_models(text: str) -> dict[str, str]:
-    """opencode-api provider'ının models bloğundaki id -> name sözlüğü."""
+    """Return the id -> name map from the opencode-api provider's models block."""
     found = re.search(
         r'"' + PROVIDER + r'"\s*:\s*\{.*?"models"\s*:\s*\{(.*?)\n\s*\}',
         text,
@@ -69,9 +130,9 @@ def read_config_models(text: str) -> dict[str, str]:
 def build_block(free: list[tuple[str, str]], names: dict[str, str]) -> str:
     lines = []
     for mid, live_name in free:
-        name = names.get(mid, live_name)  # mevcut isim korunur, yenisi canlıdan
+        name = names.get(mid, live_name)  # keep the existing name, fall back to the live one
         lines.append(f'        "{mid}": {{ "name": "{name}" }}')
-    return ",\n".join(lines)  # JSON üyeleri virgülle ayrılmalı (son satırda virgül yok)
+    return ",\n".join(lines)  # JSON members must be comma-separated (no trailing comma)
 
 
 def main() -> int:
@@ -117,9 +178,11 @@ def main() -> int:
     if n != 1:
         sys.exit("HATA: models bloğu değiştirilemedi.")
 
-    # Önce doğrula, sonra yaz: geçersizse config'e hiç dokunma.
+    # Validate first, write second: never touch the config if the result is invalid.
+    # The config is JSONC (comments / trailing commas), so convert it to strict
+    # JSON for validation; the file on disk keeps its original JSONC text.
     try:
-        json.loads(new_text)
+        json.loads(jsonc_to_json(new_text))
     except json.JSONDecodeError as e:
         sys.exit(
             f"HATA: üretilen içerik geçersiz JSON ({e}).\n"

@@ -24,3 +24,8 @@ Everything here is written in **English**. The Turkish quick tour is
 
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — development setup and checks.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — release history.
+
+## Reports — root cause analyses
+
+- [`../HOTFIX-2026-11-24-jsonc-validation.md`](../HOTFIX-2026-11-24-jsonc-validation.md)
+  — why `--apply` rejected a valid JSONC config, the fix, and its verification.

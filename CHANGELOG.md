@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `--apply` now validates JSONC configs correctly. The validate-before-write step
+  used `json.loads` on the raw `opencode.jsonc` text, so `//` comments (and
+  trailing commas) in the config made a valid config look like invalid JSON and
+  aborted the update. A local JSONC-to-JSON normalizer is now applied for
+  validation only; the file on disk keeps its original JSONC formatting.
+  Details: `HOTFIX-2026-11-24-jsonc-validation.md`.
+
 ## [1.0.2]
 
 ### Changed
