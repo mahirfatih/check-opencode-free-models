@@ -39,7 +39,7 @@ block (redacted, no secrets).
 
 ## Current free chat models
 
-As of 2026-11-20, the Console lists 11 free chat models (run the script
+As of 2026-11-24, the Console lists 10 free chat models (run the script
 to refresh):
 
 - `beam-free` — Beam Free
@@ -48,7 +48,6 @@ to refresh):
 - `flint-40b-free` — Flint 40B Free
 - `hy4-flash-free` — Hy4 flash Free
 - `iceman-free` — Iceman Free
-- `longcat-2.5-free` — LongCat 2.5 Free
 - `mimo-v2.6-flash-free` — MiMo-V2.6-Flash Free
 - `nemotron-3.5-lightning-free` — Nemotron 3.5 Lightning Free
 - `nemotron-3.5-super-vl-free` — Nemotron 3.5 Super VL Free
@@ -86,8 +85,8 @@ python3 check-opencode-free-models.py --apply    # update, with backup
 Example output:
 
 ```
-canlı ücretsiz sohbet modeli: 11
-config'deki model           : 11
+canlı ücretsiz sohbet modeli: 10
+config'deki model           : 10
 eklenecek : -
 kaldırılacak: -
 SONUÇ: güncel, fark yok.

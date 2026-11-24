@@ -33,7 +33,7 @@ dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
 
 ## Güncel ücretsiz chat modelleri
 
-2026-11-20 itibarıyla Console 11 ücretsiz chat modeli listeliyor
+2026-11-24 itibarıyla Console 10 ücretsiz chat modeli listeliyor
 (yenilemek için script'i çalıştır):
 
 - `beam-free` — Beam Free
@@ -42,7 +42,6 @@ dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
 - `flint-40b-free` — Flint 40B Free
 - `hy4-flash-free` — Hy4 flash Free
 - `iceman-free` — Iceman Free
-- `longcat-2.5-free` — LongCat 2.5 Free
 - `mimo-v2.6-flash-free` — MiMo-V2.6-Flash Free
 - `nemotron-3.5-lightning-free` — Nemotron 3.5 Lightning Free
 - `nemotron-3.5-super-vl-free` — Nemotron 3.5 Super VL Free
@@ -80,8 +79,8 @@ python3 check-opencode-free-models.py --apply    # yedeği alarak güncelle
 Örnek çıktı:
 
 ```
-canlı ücretsiz sohbet modeli: 11
-config'deki model           : 11
+canlı ücretsiz sohbet modeli: 10
+config'deki model           : 10
 eklenecek : -
 kaldırılacak: -
 SONUÇ: güncel, fark yok.

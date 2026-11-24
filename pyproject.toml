@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "check-opencode-free-models"
-version = "1.0.2"
+version = "1.0.4"
 description = "Small tool that keeps OpenCode's free chat models in sync with opencode.jsonc: drift report + --apply with a timestamped backup."
 readme = "README.md"
 requires-python = ">=3.10"

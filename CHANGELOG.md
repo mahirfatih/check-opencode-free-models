@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   regression, integration, end-to-end and automated UI tests. Run with
   `python3 -m unittest discover -s test -p "test_*.py" -v` or `./test/run_all_tests.sh`.
   Details: `test/README.md`, `docs/testing/TESTING.md`.
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`): `py_compile` +
+  unittest discover on push and PR.
+- Docs refreshed: model lists and example output updated to the live
+  endpoint (10 free chat models, dated 2026-11-24).
 
 ### Fixed
 
