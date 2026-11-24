@@ -119,11 +119,9 @@ def read_config_models(text: str) -> dict[str, str]:
     if not found:
         sys.exit(f"HATA: {PROVIDER} models bloğu bulunamadı.")
     block = found.group(1)
-    out: dict[str, str] = {}
-    for line in block.splitlines():
-        entry_match = re.match(r'\s*"([^"]+)"\s*:\s*\{\s*"name"\s*:\s*"([^"]*)"', line)
-        if entry_match:
-            out[entry_match.group(1)] = entry_match.group(2)
+    # Entries may be one-line (`"id": { "name": "X" },`) or multi-line (the shape
+    # of the example config). \s* spans newlines, so one regex covers both.
+    out = dict(re.findall(r'\s*"([^"]+)"\s*:\s*\{\s*"name"\s*:\s*"([^"]*)"', block, re.S))
     return out
 
 
