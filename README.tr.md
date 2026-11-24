@@ -113,6 +113,7 @@ config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
 | `CHANGELOG.md` | Sürüm geçmişi. |
 | `CONTRIBUTING.md` | Geliştirme kurulumu ve kontroller. |
 | `LICENSE` | MIT. |
+| [`test/`](./test/) | Otomatik test suite'leri (smoke / sanity / unit / regression / integration / e2e / ui) + [`test/README.md`](./test/README.md). |
 
 ## Değerlendirme / ileride öneriler
 
@@ -124,9 +125,9 @@ config güncel olduğunda 0 (`SONUÇ: güncel, fark yok.`).
    `type=decision (systemone) models ignored: jev-1.13-free` gibi bir bilgi satırı
    ver: geçmişteki "açık-amamın" durumu (`jev-1.13-free`
    `opencode-api`'ye yazılıp 429 alma vakası) tekrarlanmasın.
-4. **Unit tests** — `ENDPOINT` ve `CONFIG` module-level constantleri aslında
-   env var'a dönebilir (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) ve endpoint
-   `urllib` mock'lanabilir.
+4. **Unit tests** — `ENDPOINT` ve `CONFIG` module-level constantleri artık
+   test suite'inde mock'larla doğrulanıyor (`test/test_unit.py`); env var
+   override'i (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) hâlâ ileride.
 5. **`--dry-run` aliasi** — mevcut durumu 1 kez daha serbestçe içfakırlayabilir.
 6. **`recommended_api` routing** — `api.recommended_api == "systemone"` model bir
    `opencode-jev` provider'ına kodlayasım, ama OpenCode'daki systemone/v1

@@ -25,6 +25,11 @@ Everything here is written in **English**. The Turkish quick tour is
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — development setup and checks.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — release history.
 
+## Testing
+
+- [`testing/TESTING.md`](./testing/TESTING.md) — how the automated test suites
+  (smoke / sanity / unit / regression / integration / e2e / ui) are organized and run.
+
 ## Reports — root cause analyses
 
 - [`../HOTFIX-2026-11-24-jsonc-validation.md`](../HOTFIX-2026-11-24-jsonc-validation.md)

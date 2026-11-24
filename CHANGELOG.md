@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Automated test suite under `test/` (standard library only): smoke, sanity, unit,
+  regression, integration, end-to-end and automated UI tests. Run with
+  `python3 -m unittest discover -s test -p "test_*.py" -v` or `./test/run_all_tests.sh`.
+  Details: `test/README.md`, `docs/testing/TESTING.md`.
+
 ### Fixed
 
 - `--apply` now validates JSONC configs correctly. The validate-before-write step

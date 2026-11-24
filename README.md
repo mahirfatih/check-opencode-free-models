@@ -119,6 +119,8 @@ in sync (`SONUÇ: güncel, fark yok.`).
 | `CHANGELOG.md` | Release history. |
 | `CONTRIBUTING.md` | Development setup and checks. |
 | `LICENSE` | MIT. |
+| [`test/`](./test/) | Automated test suites (smoke / sanity / unit / regression / integration / e2e / ui) + [`test/README.md`](./test/README.md). |
+| [`docs/testing/TESTING.md`](./docs/testing/TESTING.md) | Testing guide for the automated suites. |
 
 ## Project structure
 
@@ -132,21 +134,52 @@ check-opencode-free-models/
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── .gitignore
+├── test/
+│   ├── test_smoke.py
+│   ├── test_sanity.py
+│   ├── test_unit.py
+│   ├── test_regression.py
+│   ├── test_integration.py
+│   ├── test_e2e.py
+│   ├── test_automated_ui.py
+│   ├── README.md
+│   └── run_all_tests.sh
 └── docs/
-    └── README.md
+    ├── README.md
+    └── testing/
+        └── TESTING.md
 ```
 
 ## Testing & CI
 
-There is no automated test suite yet. Before a change:
+The repository ships a standard-library-only automated test suite under
+[`test/`](./test/):
+
+```bash
+python3 -m unittest discover -s test -p "test_*.py" -v
+```
+
+| Suite | File | Focus |
+|---|---|---|
+| Smoke | [`test/test_smoke.py`](./test/test_smoke.py) | Script compiles, module loads, minimal JSONC handling. |
+| Sanity | [`test/test_sanity.py`](./test/test_sanity.py) | Constants, example config, generated block validity. |
+| Unit | [`test/test_unit.py`](./test/test_unit.py) | Pure functions with mocks (`jsonc_to_json`, `read_config_models`, `build_block`, `fetch_free_ids`, `main`). |
+| Regression | [`test/test_regression.py`](./test/test_regression.py) | JSONC validation bug (2026-11-24) and apply idempotency. |
+| Integration | [`test/test_integration.py`](./test/test_integration.py) | Local HTTP server + full fetch→diff→build→validate→write→read-back pipeline. |
+| End-to-End (E2E) | [`test/test_e2e.py`](./test/test_e2e.py) | Real CLI subprocess, isolated `HOME`, full `--apply` lifecycle. |
+| Automated UI | [`test/test_automated_ui.py`](./test/test_automated_ui.py) | Terminal output, user-facing messages, exit codes. |
+
+Before a change:
 
 - `python3 -m py_compile check-opencode-free-models.py` — syntax.
 - `python3 check-opencode-free-models.py` — drift report (exit `0` when in sync).
+- `python3 -m unittest discover -s test -p "test_*.py" -v` — full test suite.
 
 ## Documentation
 
 - [`README.tr.md`](./README.tr.md) — Turkish tour.
 - [`docs/README.md`](./docs/README.md) — documentation map.
+- [`docs/testing/TESTING.md`](./docs/testing/TESTING.md) — testing guide.
 - [`CHANGELOG.md`](./CHANGELOG.md) — release history.
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — development setup.
 
