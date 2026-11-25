@@ -14,6 +14,6 @@ jobs:
         with:
           python-version: "3.10"
       - name: Syntax check
-        run: python3 -m py_compile check-opencode-free-models.py
+        run: python3 -m py_compile check-opencode-free-models.py test/run-tests.py
       - name: Test suite
-        run: python3 -m unittest discover -s test -p "test_*.py"
+        run: python3 test/run-tests.py

@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Automated test suite under `test/` (standard library only): smoke, sanity, unit,
   regression, integration, end-to-end and automated UI tests. Run with
-  `python3 -m unittest discover -s test -p "test_*.py" -v` or `./test/run_all_tests.sh`.
+  `python3 test/run-tests.py` or `./test/run-all-tests.sh`.
   Details: `test/README.md`, `docs/testing/TESTING.md`.
 - GitHub Actions CI workflow (`.github/workflows/ci.yml`): `py_compile` +
-  unittest discover on push and PR.
+  the stdlib test runner on push and PR.
+- All shell and Python files renamed to kebab-case (`test/test-*.py`,
+  `test/run-all-tests.sh`). Added `test/run-tests.py` because `unittest`
+  discovery cannot import hyphenated module names.
 - Docs refreshed: model lists and example output updated to the live
   endpoint (10 free chat models, dated 2026-11-24).
 - Atomic config write (tempfile + os.replace, fsync) for `--apply`.

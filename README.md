@@ -173,11 +173,13 @@ check-opencode-free-models/
 ├── README.md · README.tr.md              # this tour / Türkçe tur
 ├── CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · LICENSE
 ├── pyproject.toml
-├── .github/workflows/ci.yml              # py_compile + unittest
-├── test/                                 # 7 suites + README.md + run_all_tests.sh
-│   ├── test_smoke.py · test_sanity.py · test_unit.py
-│   ├── test_regression.py · test_integration.py
-│   └── test_e2e.py · test_automated_ui.py
+├── .github/workflows/ci.yml              # py_compile + stdlib test runner
+├── test/                                 # 7 suites + runners + README.md
+│   ├── run-tests.py                      # importlib-based stdlib runner
+│   ├── run-all-tests.sh                  # shell wrapper
+│   ├── test-smoke.py · test-sanity.py · test-unit.py
+│   ├── test-regression.py · test-integration.py
+│   └── test-e2e.py · test-automated-ui.py
 └── docs/
     ├── README.md
     └── testing/TESTING.md
@@ -190,18 +192,22 @@ check-opencode-free-models/
 Standard-library-only automated suites under [`test/`](./test/):
 
 ```bash
-python3 -m unittest discover -s test -p "test_*.py" -v
+python3 test/run-tests.py               # all suites
+./test/run-all-tests.sh unit            # one suite via shell wrapper
 ```
+
+`unittest discover` cannot import hyphenated module names, so the runner loads
+each `test-*.py` file by path via `importlib`.
 
 | Suite | File | Focus |
 | :--- | :--- | :--- |
-| 💨 Smoke | [`test_smoke.py`](./test/test_smoke.py) | Compile, module load, JSONC basics. |
-| ✅ Sanity | [`test_sanity.py`](./test/test_sanity.py) | Constants, example config, generated block. |
-| 🔬 Unit | [`test_unit.py`](./test/test_unit.py) | Pure functions with mocks; CLI flags. |
-| 🩹 Regression | [`test_regression.py`](./test/test_regression.py) | JSONC bug + apply idempotency. |
-| 🔗 Integration | [`test_integration.py`](./test/test_integration.py) | Local HTTP server + full pipeline. |
-| 🎯 E2E | [`test_e2e.py`](./test/test_e2e.py) | Real CLI subprocess, isolated `HOME`. |
-| 🖥️ UI | [`test_automated_ui.py`](./test/test_automated_ui.py) | Output, messages, exit codes. |
+| 💨 Smoke | [`test-smoke.py`](./test/test-smoke.py) | Compile, module load, JSONC basics. |
+| ✅ Sanity | [`test-sanity.py`](./test/test-sanity.py) | Constants, example config, generated block. |
+| 🔬 Unit | [`test-unit.py`](./test/test-unit.py) | Pure functions with mocks; CLI flags. |
+| 🩹 Regression | [`test-regression.py`](./test/test-regression.py) | JSONC bug + apply idempotency. |
+| 🔗 Integration | [`test-integration.py`](./test/test-integration.py) | Local HTTP server + full pipeline. |
+| 🎯 E2E | [`test-e2e.py`](./test/test-e2e.py) | Real CLI subprocess, isolated `HOME`. |
+| 🖥️ UI | [`test-automated-ui.py`](./test/test-automated-ui.py) | Output, messages, exit codes. |
 
 Before a change: `python3 -m py_compile check-opencode-free-models.py` and the
 full suite above. CI runs both on every push and pull request.

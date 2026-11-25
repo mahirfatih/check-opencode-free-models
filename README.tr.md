@@ -174,11 +174,13 @@ check-opencode-free-models/
 ├── README.md · README.tr.md              # İngilizce tur / bu tur
 ├── CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · LICENSE
 ├── pyproject.toml
-├── .github/workflows/ci.yml              # py_compile + unittest
-├── test/                                 # 7 suite + README.md + run_all_tests.sh
-│   ├── test_smoke.py · test_sanity.py · test_unit.py
-│   ├── test_regression.py · test_integration.py
-│   └── test_e2e.py · test_automated_ui.py
+├── .github/workflows/ci.yml              # py_compile + stdlib test runner
+├── test/                                 # 7 suite + runner'lar + README.md
+│   ├── run-tests.py                      # importlib tabanlı stdlib runner
+│   ├── run-all-tests.sh                  # kabuk sarmalayıcı
+│   ├── test-smoke.py · test-sanity.py · test-unit.py
+│   ├── test-regression.py · test-integration.py
+│   └── test-e2e.py · test-automated-ui.py
 └── docs/
     ├── README.md
     └── testing/TESTING.md
@@ -191,18 +193,22 @@ check-opencode-free-models/
 Sadece standart kütüphane kullanan otomatik suite'ler: [`test/`](./test/)
 
 ```bash
-python3 -m unittest discover -s test -p "test_*.py" -v
+python3 test/run-tests.py               # tüm suite'ler
+./test/run-all-tests.sh unit            # tek suite (kabuk sarmalayıcı)
 ```
+
+`unittest discover` tireli modül adlarını import edemediği için runner her
+`test-*.py` dosyasını `importlib` ile yolundan yükler.
 
 | Suite | Dosya | Odak |
 | :--- | :--- | :--- |
-| 💨 Smoke | [`test_smoke.py`](./test/test_smoke.py) | Derleme, modül yükleme, JSONC temelleri. |
-| ✅ Sanity | [`test_sanity.py`](./test/test_sanity.py) | Sabitler, örnek config, üretilen blok. |
-| 🔬 Unit | [`test_unit.py`](./test/test_unit.py) | Mock'larla saf fonksiyonlar; CLI parametreleri. |
-| 🩹 Regression | [`test_regression.py`](./test/test_regression.py) | JSONC hatası + apply idempotency. |
-| 🔗 Integration | [`test_integration.py`](./test/test_integration.py) | Yerel HTTP sunucu + tam akış. |
-| 🎯 E2E | [`test_e2e.py`](./test/test_e2e.py) | Gerçek CLI subprocess, izole `HOME`. |
-| 🖥️ UI | [`test_automated_ui.py`](./test/test_automated_ui.py) | Çıktı, mesajlar, çıkış kodları. |
+| 💨 Smoke | [`test-smoke.py`](./test/test-smoke.py) | Derleme, modül yükleme, JSONC temelleri. |
+| ✅ Sanity | [`test-sanity.py`](./test/test-sanity.py) | Sabitler, örnek config, üretilen blok. |
+| 🔬 Unit | [`test-unit.py`](./test/test-unit.py) | Mock'larla saf fonksiyonlar; CLI parametreleri. |
+| 🩹 Regression | [`test-regression.py`](./test/test-regression.py) | JSONC hatası + apply idempotency. |
+| 🔗 Integration | [`test-integration.py`](./test/test-integration.py) | Yerel HTTP sunucu + tam akış. |
+| 🎯 E2E | [`test-e2e.py`](./test/test-e2e.py) | Gerçek CLI subprocess, izole `HOME`. |
+| 🖥️ UI | [`test-automated-ui.py`](./test/test-automated-ui.py) | Çıktı, mesajlar, çıkış kodları. |
 
 Değişiklik öncesi: `python3 -m py_compile check-opencode-free-models.py` ve
 yukarıdaki tam suite. CI her push ve PR'da ikisini de çalıştırır.
