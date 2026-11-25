@@ -1,40 +1,141 @@
-# Check Opencode Free Models
+# 🧰 Check OpenCode Free Models
 
+[![CI](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![MCP](https://img.shields.io/badge/MCP-stdio-lightgrey)
-![Client](https://img.shields.io/badge/client-OpenCode-green)
+![Bağımlılık](https://img.shields.io/badge/bağımlılık-sadece%20stdlib-green)
+![Test](https://img.shields.io/badge/test-44%20geçiyor-brightgreen)
 [![PyPI](https://img.shields.io/pypi/v/check-opencode-free-models)](https://pypi.org/project/check-opencode-free-models/)
-![License](https://img.shields.io/badge/license-MIT-blue)
+![Lisans](https://img.shields.io/badge/lisans-MIT-blue)
 
-🌐 **English** · [Türkçe](./README.tr.md)
+🌐 [English](./README.md) · **Türkçe**
 
-OpenCode Console (`https://opencode.ai/inference/v1/models`) üzerinden, OpenCode
-ücretsiz **chat** modellerini `~/.config/opencode/opencode.jsonc` ile **sync eden**
-küçük bir araç.
+**check-opencode-free-models**, OpenCode Console'un yayınladığı ücretsiz
+**chat** modellerini `~/.config/opencode/opencode.jsonc` ile senkronize eden,
+bağımlılıksız küçük bir CLI aracı.
 
-## Kaynak ve referanslar
+> ⚡ **Tek satırda:** çek → ücretsiz chat modellerini süz → config ile karşılaştır
+> → istersen zaman damgalı yedek + **atomik** yazımla bloğu güncelle.
+> Başka hiçbir şey okunmaz veya yazılmaz.
 
-- Ücretsiz modeller belgesi: https://opencode.ai/docs/models/#free-models
-- OpenCode Desktop: https://opencode.ai/desktop
-- Script'in kullandığı canlı endpoint: `https://opencode.ai/inference/v1/models`
-  (auth gerekmez; `cost.text.input.price == 0 && cost.text.output.price == 0` ve
-  `type == "chat"`).
+---
 
-## Neler nereden çekilir
+## 📖 Genel bakış
+
+| Kaynak | Referans |
+| :--- | :--- |
+| 📚 Ücretsiz modeller belgesi | <https://opencode.ai/docs/models/#free-models> |
+| 🖥️ OpenCode Desktop | <https://opencode.ai/desktop> |
+| 🌐 Canlı endpoint (auth yok) | `https://opencode.ai/inference/v1/models` |
+
+Filtre kuralı: `type == "chat"` **ve** `cost.text.input.price == 0` **ve**
+`cost.text.output.price == 0`. Karar modelleri (`type: decision`, örn. Jev)
+`opencode-api` bloğuna asla yazılmaz; atlanan ücretsiz chat-olmayan modeller
+uyarı olarak raporlanır.
+
+```mermaid
+flowchart LR
+    A["🌐 Canlı uç<br/>inference/v1/models"] --> B["🔍 Süz<br/>chat + sıfır maliyet"]
+    B --> C["📄 Config'i oku<br/>opencode-api.models"]
+    C --> D{"Fark var mı?"}
+    D -->|"fark yok"| E["✅ çıkış 0"]
+    D -->|"fark var"| F["⚠️ çıkış 1<br/>eklenecek / kaldırılacak"]
+    F --> G{"--apply?"}
+    G -->|"hayır"| H["⏭️ sadece rapor"]
+    G -->|"evet"| I["💾 yedek + atomik yazım<br/>yazmadan önce doğrula"]
+    I --> J["✅ çıkış 0 · UYGULANDI"]
+```
+
+---
+
+## ✨ Özellikler
+
+- 🔄 **Drift tespiti** — eklenecek / kaldırılacak modelleri listeler; güncelse `0`, fark varsa `1` döner.
+- 🛡️ **Güvenli apply** — zaman damgalı yedek, yazmadan **önce** JSONC doğrulaması ve atomik `os.replace` yazımı.
+- ♚ **İdempotent** — `--apply` tekrar çalıştırılınca drift görünmez.
+- 🎛️ **Yapılandırılabilir** — `--config PATH` veya `OPENCODE_CONFIG_PATH`; endpoint `OPENCODE_MODELS_URL` ile değiştirilebilir.
+- 🧪 **44 test, sadece stdlib** — smoke / sanity / unit / regression / integration / e2e / UI + GitHub Actions CI.
+- 🌐 **İngilizce + Türkçe** doküman.
+
+---
+
+## 🚀 Hızlı başlangıç
+
+### 1. Gereksinimler
+
+| Gereksinim | Not |
+| :--- | :--- |
+| Python | 3.10+ (yalnızca standart kütüphane — `pip install` gerekmez) |
+| Hedef | OpenCode Desktop'ın kendi `~/.config/opencode/opencode.jsonc` dosyası |
+
+### 2. Çalıştır
+
+```bash
+python3 check-opencode-free-models.py                  # drift raporu
+python3 check-opencode-free-models.py --apply          # yedeği alarak güncelle
+python3 check-opencode-free-models.py --dry-run        # sadece rapor, asla yazmaz
+python3 check-opencode-free-models.py --config PATH    # farklı bir config dosyası
+python3 check-opencode-free-models.py --version        # sürümü yazdır ve çık
+```
+
+### 3. Parametreler
+
+| Parametre | Etkisi |
+| :--- | :--- |
+| *(yok)* | Drift raporu; güncelse `0`, fark varsa `1`. Yazma yapmaz. |
+| `--apply` | Yedek + doğrulama sonrası `models` bloğunu yeniden yazar. |
+| `--dry-run` | Sadece rapor modunu zorlar (`--apply`'i geçersiz kılar). |
+| `--config PATH` | `OPENCODE_CONFIG_PATH` / varsayılan config yolunu override eder. |
+| `--version` | Sürümü yazdırır ve hemen çıkar. |
+
+### 4. Örnek çıktı
+
+```text
+live free chat models: 10
+config models            : 10
+to add     : -
+to remove  : -
+RESULT: in sync, no drift.
+```
+
+---
+
+## 🧠 Nasıl çalışır
+
+1. **🔍 Çek** — `fetch_free_ids()` endpoint'i okur (geçici hatalarda 3 deneme).
+   Yalnızca sıfır maliyetli chat modelleri tutulur.
+2. **📄 Oku** — `read_config_models()`, `provider.opencode-api.models` içindeki
+   `id → name` eşlemesini ayrıştırır.
+3. **🧮 Karşılaştır** — canlı ID'ler ile config ID'leri farkı: `eklenecek` /
+   `kaldırılacak`.
+4. **🛡️ Apply** (yalnızca `--apply` ile):
+   - zaman damgalı yedek `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS` (`shutil.copy2`);
+   - `build_block()` satırları virgülle birleştirir (sonunda virgül yok);
+   - **yazmadan önce doğrula** — yeniden yazılan JSONC normalize edilip
+     dosyaya dokunulmadan önce ayrıştırılır;
+   - **atomik yazım** — aynı dizinde geçici dosya + `os.replace`.
+
+Güncellemede mevcut `name` değerleri korunur. İdempotent: ikinci `--apply`
+fark raporlamaz.
+
+---
+
+## 🗂️ Neler nereden çekilir
 
 | Kaynak | Ne | Hedef |
-|---|---|---|
-| `https://opencode.ai/inference/v1/models` (auth yok) | Ücretsiz chat modelleri (`type == "chat"`, `cost.text.input/output.price == 0`) — `id` + `name` | `~/.config/opencode/opencode.jsonc` → `provider.opencode-api.models` |
-| Mevcut config | Güncelleme sırasında mevcut `name` değerleri korunur | yeniden yazılan bloğa birleştirilir |
-| `--apply` | Bloğu yeniden yazar; yedek `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS` | aynı dosya |
+| :--- | :--- | :--- |
+| 🌐 Canlı uç (auth yok) | Ücretsiz chat modelleri (`type == "chat"`, giriş/çıkış fiyatı 0) — `id` + `name` | `~/.config/opencode/opencode.jsonc` → `provider.opencode-api.models` |
+| 📄 Mevcut config | Kayıtlı `name` değerleri | yeniden yazılan bloğa birleştirilir |
+| 💾 `--apply` | Bloğu yeniden yazar; zaman damgalı yedek | aynı dosya |
 
-Başka hiçbir şey okunmaz/yazılmaz. `opencode-free-models.config.example.jsonc`
-dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
+`opencode-free-models.config.example.jsonc` örnek dosyası `opencode-api`
+bloğunun şeklini gösterir (redacted, secret yok).
 
-## Güncel ücretsiz chat modelleri
+---
 
-2026-11-24 itibarıyla Console 10 ücretsiz chat modeli listeliyor
-(yenilemek için script'i çalıştır):
+## 🤖 Güncel ücretsiz chat modelleri
+
+**2026-11-24** itibarıyla Console **10** ücretsiz chat modeli listeliyor
+(kaynak her zaman canlı uçtur; yenilemek için script'i çalıştır):
 
 - `beam-free` — Beam Free
 - `big-pickle` — Big Pickle
@@ -47,86 +148,85 @@ dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
 - `nemotron-3.5-super-vl-free` — Nemotron 3.5 Super VL Free
 - `tidepool-alpha-free` — Tidepool Alpha Free
 
-## Nasıl çalışır
+---
 
-1. **Fetch:** `fetch_free_ids()` kaynak endpoint (`opencode.ai/inference/v1/models`,
-   auth gerekmez) dan her modeli okur. Filtre: `cost.text.input.price == 0 &&
-   cost.text.output.price == 0` ve `type == "chat"`.
-   - Karar modelleri (`type: decision`, örneğin Jev `jev-1.13-free`) chat değil
-     (`recommended_api: systemone`), bu yüzden `opencode-api` bloğuna yazılmaz.
-2. **Drift:** `read_config_models()` → `provider.opencode-api.models` bloğundaki
-   `id -> name` sözlüğünü okur. Canlı listedeki ücretsiz modellerle
-   ayırımlar: eklenecek (`added`), kaldırılacak (`removed`).
-3. **Apply:** `--apply` ile:
-   - Yedeği `opencode.jsonc.bak-YYYY-MM-DD-HH_MM_SS`
-     (`shutil.copy2`, metadata korunur) alır.
-   - `build_block()` → her satır `        "id": { "name": "name" },` virgüllü
-     satırlar; doğru virgüllere sahip yanlış satır üretmeyi engellemek için
-     satırları aralarında virgül koyup yazdırır.
-   - `pattern.subn` ile `opencode-api`'nin models bloğunu değiştirir.
-   - **Validate-before-write:** değişmiş metni `json.loads(new_text)` ile
-     **yazdırmadan önce** doğrular — geçersiz olursa config'e hiç dokunmaz.
+## ⏰ Desktop ve crontab
 
-İdempotent: tekrar `--apply` çalıştırınca drift yok.
+Araç **OpenCode Desktop'ın** kendi `~/.config/opencode/opencode.jsonc`
+yapılandırmasını hedefler — başka bir config dosyasına dokunmaz. `--apply` ile
+otomatik güncelleyebilir veya günlük drift kontrolü için crontab ekleyebilirsin:
 
-## Kullanım
-
-```
-python3 check-opencode-free-models.py            # drift raporu (exit 0: güncel, 1: drift var)
-python3 check-opencode-free-models.py --apply    # yedeği alarak güncelle
-python3 check-opencode-free-models.py --dry-run  # sadece rapor, yazma
-python3 check-opencode-free-models.py --config PATH  # farklı bir config dosyası kullan
-python3 check-opencode-free-models.py --version   # sürümü yazdır ve çık
-```
-
-Örnek çıktı:
-
-```
-live free chat models: 10
-config models            : 10
-to add     : -
-to remove  : -
-RESULT: in sync, no drift.
-```
-
-## OpenCode Desktop ve Crontab
-
-Bu araç **OpenCode Desktop'ın** kendi `~/.config/opencode/opencode.jsonc`
-yapılandırmasını hedefler — başka bir config dosyasına dokunmaz.
-
-`--apply` ile config'i otomatik güncelleyebilirsin, veya sadece drift
-kontrolü için günlük bir crontab satırı ekleyebilirsin:
-
-```
+```cron
 0 6 * * * /path/to/check-opencode-free-models/check-opencode-free-models.py
 ```
 
-Drift olursa çıkış kodu 1 olur (`RESULT: drift found. Update with --apply.`);
-config güncel olduğunda 0 (`RESULT: in sync, no drift.`).
+Çıkış kodları: drift varsa `1` (`RESULT: drift found. Update with --apply.`),
+güncelse `0` (`RESULT: in sync, no drift.`).
 
-## Dosyalar
+---
 
-| Dosya | Açıklama |
-|---|---|
-| `check-opencode-free-models.py` | Çalışan script (canlı uç, drift, apply + yedek). |
-| `opencode-free-models.config.example.jsonc` | `opencode-api` bloğu örneği (redacted, secret yok). |
-| `README.md` | İngilizce tur. |
-| `README.tr.md` | Bu dosya. |
-| `CHANGELOG.md` | Sürüm geçmişi. |
-| `CONTRIBUTING.md` | Geliştirme kurulumu ve kontroller. |
-| `LICENSE` | MIT. |
-| [`test/`](./test/) | Otomatik test suite'leri (smoke / sanity / unit / regression / integration / e2e / ui) + [`test/README.md`](./test/README.md). |
+## 📂 Proje yapısı
 
-## Değerlendirme / ileride öneriler
+```text
+check-opencode-free-models/
+├── check-opencode-free-models.py         # çalışan script (çek · drift · apply · yedek)
+├── opencode-free-models.config.example.jsonc
+├── README.md · README.tr.md              # İngilizce tur / bu tur
+├── CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · LICENSE
+├── pyproject.toml
+├── .github/workflows/ci.yml              # py_compile + unittest
+├── test/                                 # 7 suite + README.md + run_all_tests.sh
+│   ├── test_smoke.py · test_sanity.py · test_unit.py
+│   ├── test_regression.py · test_integration.py
+│   └── test_e2e.py · test_automated_ui.py
+└── docs/
+    ├── README.md
+    └── testing/TESTING.md
+```
 
-Bu sürümde tamamlananlar: atomic write (tempfile + os.replace), robust `type`
-filtresi (`m.get("type") or "chat"`), atlanan non-chat modeller için WARN,
-env override'ları (`OPENCODE_MODELS_URL`, `OPENCODE_CONFIG_PATH`) ve `--dry-run`
-alias'ı.
+---
 
-Kalan:
-6. **`recommended_api` routing** — `api.recommended_api == "systemone"` model bir
-   `opencode-jev` provider'ına kodlayasım, ama OpenCode'daki systemone/v1
-   endpoint'i 404 dönüyor (denetimde). Jev kararları MCP server
-   (`github:codaaiteam/jev-mcp`, TypeSafe API `api.typesafe.ai`) üzerinde
-   çalışıyor — o kelimeye çıkışın rehberi `jev_gate`/`jev_check` MCP tool'ları.
+## 🧪 Test ve CI
+
+Sadece standart kütüphane kullanan otomatik suite'ler: [`test/`](./test/)
+
+```bash
+python3 -m unittest discover -s test -p "test_*.py" -v
+```
+
+| Suite | Dosya | Odak |
+| :--- | :--- | :--- |
+| 💨 Smoke | [`test_smoke.py`](./test/test_smoke.py) | Derleme, modül yükleme, JSONC temelleri. |
+| ✅ Sanity | [`test_sanity.py`](./test/test_sanity.py) | Sabitler, örnek config, üretilen blok. |
+| 🔬 Unit | [`test_unit.py`](./test/test_unit.py) | Mock'larla saf fonksiyonlar; CLI parametreleri. |
+| 🩹 Regression | [`test_regression.py`](./test/test_regression.py) | JSONC hatası + apply idempotency. |
+| 🔗 Integration | [`test_integration.py`](./test/test_integration.py) | Yerel HTTP sunucu + tam akış. |
+| 🎯 E2E | [`test_e2e.py`](./test/test_e2e.py) | Gerçek CLI subprocess, izole `HOME`. |
+| 🖥️ UI | [`test_automated_ui.py`](./test/test_automated_ui.py) | Çıktı, mesajlar, çıkış kodları. |
+
+Değişiklik öncesi: `python3 -m py_compile check-opencode-free-models.py` ve
+yukarıdaki tam suite. CI her push ve PR'da ikisini de çalıştırır.
+
+---
+
+## 📚 Dokümanlar
+
+- [`README.md`](./README.md) — İngilizce tur.
+- [`docs/README.md`](./docs/README.md) — doküman haritası.
+- [`docs/testing/TESTING.md`](./docs/testing/TESTING.md) — test rehberi.
+- [`test/README.md`](./test/README.md) — suite özeti.
+- [`CHANGELOG.md`](./CHANGELOG.md) · [`SECURITY.md`](./SECURITY.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
+---
+
+## 🔮 Yol haritası
+
+- **✅ Tamamlandı:** atomik yazım, robust `type` filtresi, decision-model WARN,
+  env override'ları, `--dry-run`, `--config` / `--version`, ağ retry'leri, CI.
+- **Kalan:** `recommended_api` routing — systemone endpoint şu an 404 dönüyor.
+
+---
+
+## 📄 Lisans
+
+MIT — [`LICENSE`](./LICENSE) dosyasına bakın.
