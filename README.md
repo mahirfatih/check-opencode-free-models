@@ -80,6 +80,9 @@ Idempotent: re-running `--apply` reports no drift.
 ```
 python3 check-opencode-free-models.py            # drift report (exit 0: in sync, 1: drift)
 python3 check-opencode-free-models.py --apply    # update, with backup
+python3 check-opencode-free-models.py --dry-run  # report only, never write
+python3 check-opencode-free-models.py --config PATH  # use a different config file
+python3 check-opencode-free-models.py --version   # print version and exit
 ```
 
 Example output:

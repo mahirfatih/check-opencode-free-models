@@ -74,6 +74,9 @@ dosyası `opencode-api` bloğunun şeklini gösterir (redacted, secret yok).
 ```
 python3 check-opencode-free-models.py            # drift raporu (exit 0: güncel, 1: drift var)
 python3 check-opencode-free-models.py --apply    # yedeği alarak güncelle
+python3 check-opencode-free-models.py --dry-run  # sadece rapor, yazma
+python3 check-opencode-free-models.py --config PATH  # farklı bir config dosyası kullan
+python3 check-opencode-free-models.py --version   # sürümü yazdır ve çık
 ```
 
 Örnek çıktı:

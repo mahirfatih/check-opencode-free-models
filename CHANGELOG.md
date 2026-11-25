@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - WARN when a free non-chat (e.g. decision) model is skipped.
 - `--dry-run` flag (forces no-write, overrides `--apply`).
 - `OPENCODE_MODELS_URL` / `OPENCODE_CONFIG_PATH` env overrides.
+- `--config PATH` CLI flag (overrides the env/default config path).
+- `--version` flag.
+- Network resilience: retry + friendly error on fetch failure.
 - English-only Python sources (no Turkish in comments or messages).
 - GitHub Actions pinned to full commit SHAs (supply-chain hardening).
 

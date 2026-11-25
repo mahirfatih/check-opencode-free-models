@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Comprehensive unit tests for check-opencode-free-models.
 
-Saf fonksiyon seviyesi testler: jsonc_to_json, read_config_models,
-build_block, fetch_free_ids ve main() akislinin mock'larla dogrulanmasi.
+Function-level tests: jsonc_to_json, read_config_models, build_block,
+fetch_free_ids and the main() flow verified with mocks.
 
-Kapsam:
-    - jsonc_to_json: yorum, block comment, trailing comma, string literal koruma.
-    - read_config_models: config parse + missing-provider hatasi.
-    - build_block: join kurallari, name fallback'i.
-    - fetch_free_ids: endpoint filtreleri (chat + free) via mock.
-    - main(): drift / in-sync / apply akislari via mock.
+Scope:
+    - jsonc_to_json: comment, block comment, trailing comma, string literal protection.
+    - read_config_models: config parse + missing-provider error.
+    - build_block: join rules, name fallback.
+    - fetch_free_ids: endpoint filters (chat + free) via mock.
+    - main(): drift / in-sync / apply flows via mock.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import urllib.error
 import urllib.request
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -167,6 +168,11 @@ class FetchFreeIdsTests(unittest.TestCase):
             result = self.mod.fetch_free_ids()
         self.assertEqual(result, [("noname-free", "noname-free")])
 
+    def test_raises_runtime_error_after_total_failure(self):
+        with mock.patch.object(urllib.request, "urlopen", side_effect=urllib.error.URLError("boom")):
+            with self.assertRaises(RuntimeError):
+                self.mod.fetch_free_ids()
+
 
 class MainFlowTests(unittest.TestCase):
     def setUp(self):
@@ -208,6 +214,41 @@ class MainFlowTests(unittest.TestCase):
         sys.argv = ["check-opencode-free-models.py"]
         try:
             self.assertEqual(self.mod.main(), 1)
+        finally:
+            sys.argv = old_argv
+
+    def test_dry_run_does_not_write_on_drift(self):
+        self.mod.CONFIG = str(self.config_path)
+        self._write_config('        "stale-free": { "name": "Stale Free" },\n')
+        self.mod.fetch_free_ids = mock.Mock(return_value=[("fresh-free", "Fresh Free")])
+        before = self.config_path.read_text(encoding="utf-8")
+        old_argv = sys.argv
+        sys.argv = ["check-opencode-free-models.py", "--dry-run"]
+        try:
+            self.assertEqual(self.mod.main(), 1)
+        finally:
+            sys.argv = old_argv
+        self.assertEqual(self.config_path.read_text(encoding="utf-8"), before)
+
+    def test_network_failure_returns_nonzero(self):
+        self.mod.CONFIG = str(self.config_path)
+        self._write_config('        "x-free": { "name": "X" },\n')
+        self.mod.fetch_free_ids = mock.Mock(side_effect=RuntimeError("could not fetch"))
+        old_argv = sys.argv
+        sys.argv = ["check-opencode-free-models.py"]
+        try:
+            with self.assertRaises(SystemExit):
+                self.mod.main()
+        finally:
+            sys.argv = old_argv
+
+    def test_config_flag_uses_provided_path(self):
+        self._write_config('        "in-sync-free": { "name": "In Sync Free" },\n')
+        self.mod.fetch_free_ids = mock.Mock(return_value=[("in-sync-free", "In Sync Free")])
+        old_argv = sys.argv
+        sys.argv = ["check-opencode-free-models.py", "--config", str(self.config_path)]
+        try:
+            self.assertEqual(self.mod.main(), 0)
         finally:
             sys.argv = old_argv
 

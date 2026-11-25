@@ -21,6 +21,7 @@ import tempfile
 import time
 import urllib.request
 
+VERSION = "1.0.4"
 CONFIG = os.path.expanduser(os.environ.get("OPENCODE_CONFIG_PATH", "~/.config/opencode/opencode.jsonc"))
 ENDPOINT = os.environ.get("OPENCODE_MODELS_URL", "https://opencode.ai/inference/v1/models")
 PROVIDER = "opencode-api"
@@ -35,8 +36,19 @@ SKIPPED_FREE_MODELS: list[tuple[str, str]] = []
 
 def fetch_free_ids() -> list[tuple[str, str]]:
     req = urllib.request.Request(ENDPOINT, headers={"User-Agent": "curl/8.0"})
-    with urllib.request.urlopen(req, timeout=30) as response:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected (ENDPOINT is a module-level constant, not user input)
-        data = json.load(response)["data"]
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected (ENDPOINT is a module-level constant, not user input)
+                data = json.load(response)["data"]
+            break
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
+            last_error = exc
+            if attempt < 2:
+                time.sleep(0.5 * (attempt + 1))
+    else:
+        raise RuntimeError(f"could not fetch models from {ENDPOINT}: {last_error}")
+
     out = []
     skipped: list[tuple[str, str]] = []
     for model in data:
@@ -146,13 +158,23 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true", help="update config")
     ap.add_argument("--dry-run", action="store_true", help="report drift without making changes (default)")
+    ap.add_argument("--config", metavar="PATH", help="path to opencode.jsonc (overrides OPENCODE_CONFIG_PATH)")
+    ap.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     args = ap.parse_args()
 
     # --dry-run wins over --apply: never write when explicitly requested.
     if args.dry_run:
         args.apply = False
 
-    free = fetch_free_ids()
+    # --config overrides the env/default config path.
+    global CONFIG
+    if args.config:
+        CONFIG = os.path.expanduser(args.config)
+
+    try:
+        free = fetch_free_ids()
+    except RuntimeError as exc:
+        sys.exit(f"ERROR: {exc}")
     free_ids = [mid for mid, _ in free]
 
     text = open(CONFIG, encoding="utf-8").read()

@@ -2,13 +2,13 @@
 """Comprehensive automated UI tests for check-opencode-free-models.
 
 Automated UI = terminal user interface of the CLI: the drift report rendered
-on stdout, its exit codes, and the user-facing Turkish messages the operator
-actually reads.
+on stdout, its exit codes, and the user-facing messages the operator reads.
 
-Kapsam:
-    - Drift raporu output contract (Turkish runtime messages preserved).
+Scope:
+    - Drift report output contract (runtime messages).
     - Exit codes: 1 on drift, 0 when in sync.
     - --apply confirmation output rendering.
+    - --version flag.
 """
 
 from __future__ import annotations
@@ -81,6 +81,12 @@ class AutomatedUiTests(unittest.TestCase):
         proc = run_script([], self.home)
         self.assertEqual(proc.returncode, 0)
         self.assertIn("RESULT: in sync, no drift.", proc.stdout)
+
+
+    def test_version_flag_prints_version(self):
+        proc = run_script(["--version"], self.home)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("1.0.4", proc.stdout)
 
 
 if __name__ == "__main__":
