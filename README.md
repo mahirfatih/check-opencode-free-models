@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-green)
-![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
+![CLI](https://img.shields.io/badge/CLI-stdlib%20only-lightgrey)
+![Tests](https://img.shields.io/badge/tests-44%20passed-brightgreen)
 [![PyPI](https://img.shields.io/pypi/v/check-opencode-free-models)](https://pypi.org/project/check-opencode-free-models/)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 

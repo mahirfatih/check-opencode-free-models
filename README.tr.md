@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml/badge.svg)](https://github.com/mahirfatih/check-opencode-free-models/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Bağımlılık](https://img.shields.io/badge/bağımlılık-sadece%20stdlib-green)
-![Test](https://img.shields.io/badge/test-44%20geçiyor-brightgreen)
+![CLI](https://img.shields.io/badge/CLI-stdlib%20only-lightgrey)
+![Tests](https://img.shields.io/badge/tests-44%20passed-brightgreen)
 [![PyPI](https://img.shields.io/pypi/v/check-opencode-free-models)](https://pypi.org/project/check-opencode-free-models/)
-![Lisans](https://img.shields.io/badge/lisans-MIT-blue)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 🌐 [English](./README.md) · **Türkçe**
 
